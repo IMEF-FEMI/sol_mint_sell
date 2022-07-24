@@ -11,8 +11,14 @@ describe("sell-nft", async () => {
     const provider = anchor.AnchorProvider.env();
     const wallet = provider.wallet as anchor.Wallet;
     anchor.setProvider(provider);
+    // ** Un-comment this to use solpg imported IDL **
+    const program = new anchor.Program(
+        require("../target/idl/mint_nft.json"),
+        new anchor.web3.PublicKey("GREPj1wkRt5dh8NeyFa6AuL8fxsiSVk5eMvKBaW9SbQ3"),
+    );
+    // ** Comment this to use solpg imported IDL **
+    // const program = anchor.workspace.MintNft as anchor.Program<MintNft>;
 
-    const program = anchor.workspace.MintNft as anchor.Program<MintNft>;
 
     it("sell!", async () => {
         //Testing constants
@@ -32,24 +38,24 @@ describe("sell-nft", async () => {
         const buyerTokenAddress = await anchor.utils.token.associatedAddress({
             mint: mint,
             owner: buyer.publicKey,
-          });
+        });
 
-          console.log(`Request to sell NFT: ${mint} at ${saleAmount} lamports.`);
-          console.log(`Owner's Token address: ${ownerTokenAddress}`);
-          console.log(`Owner's Token address: ${buyerTokenAddress}`);
-          
-          await program.methods.sell(
+        console.log(`Request to sell NFT: ${mint} at ${saleAmount} lamports.`);
+        console.log(`Owner's Token address: ${ownerTokenAddress}`);
+        console.log(`Owner's Token address: ${buyerTokenAddress}`);
+
+        await program.methods.sell(
             new anchor.BN(saleAmount)
-          )
-          .accounts({
-            mint: mint,
-            ownerTokenAccount: ownerTokenAddress,
-            ownerAuthority: wallet.publicKey,
-            buyerTokenAccount: buyerTokenAddress,
-            buyerAuthority: buyer.publicKey,
-          })
-          .signers([buyer])
-          .rpc();
+        )
+            .accounts({
+                mint: mint,
+                ownerTokenAccount: ownerTokenAddress,
+                ownerAuthority: wallet.publicKey,
+                buyerTokenAccount: buyerTokenAddress,
+                buyerAuthority: buyer.publicKey,
+            })
+            .signers([buyer])
+            .rpc();
 
     })
 
@@ -59,3 +65,6 @@ describe("sell-nft", async () => {
 ///commands
 // mkdir ~/desktop/myfiles/code/contracts/solana/mint-nft/tests/keypairs && solana-keygen new --no-bip39-passphrase -o ~/desktop/myfiles/code/contracts/solana/mint-nft/tests/keypairs/buyer1.json  
 // Generating a new keypair
+
+// solana address --keypair ~/desktop/myfiles/code/contracts/solana/mint-nft/tests/keypairs/buyer1.json
+// solana balance --keypair ~/desktop/myfiles/code/contracts/solana/mint-nft/tests/keypairs/buyer1.json
